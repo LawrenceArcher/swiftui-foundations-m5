@@ -50,6 +50,7 @@ struct ContentDetailView: View {
             
         }
         .padding(5)
+        .navigationBarTitle(lesson?.title ?? "")
         
     }
 }

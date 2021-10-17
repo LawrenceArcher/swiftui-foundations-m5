@@ -70,17 +70,28 @@ struct TestView: View {
                 
                 // Button
                 Button {
-                    //Change submitted state to true
-                    submitted = true
-                    // Check the answer and increment counter if correct
-                    if selectedAnswerIndex == model.currentQuestion!.correctIndex {
-                        numCorrect += 1
+                    //Check if answer has been submitted
+                    if submitted == true {
+                        // Answer has already been submitted, move to next question
+                        model.nextQuestion()
+                        
+                        // reset properties
+                        submitted = false
+                        selectedAnswerIndex = nil
+                    } else {
+                        // Submit the answer
+                        //Change submitted state to true
+                        submitted = true
+                        // Check the answer and increment counter if correct
+                        if selectedAnswerIndex == model.currentQuestion!.correctIndex {
+                            numCorrect += 1
+                        }
                     }
                 } label: {
                     ZStack {
                         RectangleCard(color: .green)
                             .frame(height: 48)
-                        Text("Submit")
+                        Text(buttonText)
                             .bold()
                             .padding()
                             .foregroundColor(.white)
@@ -95,6 +106,21 @@ struct TestView: View {
         } else {
             // Test hasn't loaded yet - need this because .onAppear in homeView doens't run correctly in iOS 14.5 +
             ProgressView()
+        }
+    }
+    
+    var buttonText: String {
+        // Check if answer has been submitted
+        if submitted == true {
+            if model.currentQuestionIndex + 1 == model.currentModule!.test.questions.count {
+                // this is the last question
+                return "Finish"
+            }
+            // there is a next question
+            return "Next"
+        } else {
+            // answer has not yet been submitted
+            return "Submit"
         }
     }
 }

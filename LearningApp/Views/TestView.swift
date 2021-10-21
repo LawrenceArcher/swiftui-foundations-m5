@@ -103,7 +103,10 @@ struct TestView: View {
                 
             }
             .navigationBarTitle("\(model.currentModule?.category ?? "") Test")
-        } else {
+        }
+        else {
+            // If current question is nil, we show the result view
+            TestResultView(numCorrect: numCorrect)
             // Test hasn't loaded yet - need this because .onAppear in homeView doens't run correctly in iOS 14.5 +
             ProgressView()
         }

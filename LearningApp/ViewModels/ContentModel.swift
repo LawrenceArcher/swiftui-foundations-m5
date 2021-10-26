@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 class ContentModel: ObservableObject {
     
@@ -33,7 +34,10 @@ class ContentModel: ObservableObject {
     @Published var currentTestSelected:Int?
     
     init() {
+        // Parse local included data
         getLocalData()
+        // Download remote json file and parse data
+        getRemoteData()
     }
     
     // MARK: Data Methods
@@ -42,7 +46,7 @@ class ContentModel: ObservableObject {
         let jsonUrl = Bundle.main.url(forResource: "data", withExtension: "json")
         
         do {
-            //reda the fiel into a data object
+            // read the fiel into a data object
             let jsonData = try Data(contentsOf: jsonUrl!)
             
             // try to decode the json into an array of objects
@@ -69,6 +73,49 @@ class ContentModel: ObservableObject {
             print("Couldn't parse style data")
         }
         
+    }
+    
+    func getRemoteData() {
+        //String path
+        let urlString = "https://lawrencearcher.github.io/swiftui-learningAppData/data2.json"
+        //Create a URL object
+        let url = URL(string: urlString)
+        
+        guard url != nil else {
+            // Couldn't create URL
+            return
+        }
+        //Create a URLRequest object
+        let request = URLRequest(url: url!)
+        
+        // Get the ssession and kick off the task
+        let session = URLSession.shared
+                
+        let dataTask = session.dataTask(with: request) { data, response, error in
+            // Check if there is an error
+            guard error == nil else {
+                // There was an error
+                print(error!)
+                return
+            }
+            
+            do {
+                // Create json decoder
+                let decoder = JSONDecoder()
+                // Decode
+                let modules = try decoder.decode([Module].self, from: data!)
+                DispatchQueue.main.async {
+                    // Append parsed modules into modules property
+                    self.modules += modules
+                }
+               
+            } catch {
+                // Couldn't parse JSON
+            }
+            
+        }
+        // Kick off the data task - could also add .resume() to the end of the dataTask definition if preferred!
+        dataTask.resume()
     }
     
     // MARK: Module Navigation methods
@@ -99,6 +146,9 @@ class ContentModel: ObservableObject {
     }
     
     func hasNextLesson() -> Bool {
+        guard currentModule != nil else {
+            return false
+        }
         return (currentLessonIndex + 1 < currentModule!.content.lessons.count)
     }
     
